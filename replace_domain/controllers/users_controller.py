@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Request
 from uuid import UUID
-from replace_domain.controllers.models.users import UserRequestBody
+from replace_domain.controllers.models.users import UserRequestBody, UserUpdateRequest
 from replace_domain.exceptions import EmailAlreadyExistsError
-from replace_domain.repositories.users import get, get_all, delete, new, Users
+from replace_domain.repositories.users import get, get_all, delete, new, patch, Users
 from typing import List
 from replace_domain.infra.db.engine import engine
 
@@ -54,3 +54,14 @@ async def delete_user(user_id: UUID):
     with engine.begin() as conn:
         delete(user_id, conn)
 
+@users_router.patch("/{user_id}", response_model=Users)
+async def update_user(user_id: UUID, user: UserUpdateRequest):
+    """
+    Update a user's details.
+    """
+    with engine.begin() as conn:
+        try:
+            updated_user = patch(user_id, user.model_dump(exclude_unset=True), conn)
+            return updated_user
+        except EmailAlreadyExistsError as e:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))

@@ -51,13 +51,22 @@ books = sa.Table(
     sa.Column("created_at", sa.DateTime, nullable=False, server_default=sa.func.now()),
     sa.Column("updated_at", sa.DateTime, nullable=False, server_default=sa.func.now()),
     sa.ForeignKeyConstraint(
-        ["author_id"], ["authors.id"], name="books_author_id_authors_id_fk"
+        ["author_id"],
+        ["authors.id"],
+        name="books_author_id_authors_id_fk",
+        ondelete="CASCADE",
     ),
     sa.ForeignKeyConstraint(
-        ["borrowed_by"], ["users.id"], name="books_borrowed_by_users_id_fk"
+        ["borrowed_by"],
+        ["users.id"],
+        name="books_borrowed_by_users_id_fk",
+        ondelete="SET NULL",
     ),
     sa.ForeignKeyConstraint(
-        ["library_id"], ["libraries.id"], name="books_library_id_libraries_id_fk"
+        ["library_id"],
+        ["libraries.id"],
+        name="books_library_id_libraries_id_fk",
+        ondelete="CASCADE",
     ),
 )
 
@@ -83,12 +92,16 @@ library_users = sa.Table(
     sa.Column("user_id", UUID(as_uuid=True), nullable=False),
     sa.Column("library_id", UUID(as_uuid=True), nullable=False),
     sa.ForeignKeyConstraint(
-        ["user_id"], ["users.id"], name="library_users_user_id_users_id_fk"
+        ["user_id"],
+        ["users.id"],
+        name="library_users_user_id_users_id_fk",
+        ondelete="CASCADE",
     ),
     sa.ForeignKeyConstraint(
         ["library_id"],
         ["libraries.id"],
         name="library_users_library_id_libraries_id_fk",
+        ondelete="CASCADE",
     ),
     sa.PrimaryKeyConstraint("user_id", "library_id"),
 )
