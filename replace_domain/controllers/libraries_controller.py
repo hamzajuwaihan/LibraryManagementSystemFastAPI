@@ -1,6 +1,7 @@
-from fastapi import APIRouter, status, Request
+from fastapi import APIRouter, HTTPException, status, Request
 from uuid import UUID
 from replace_domain.controllers.models.libraries import LibraryRequestBody
+from replace_domain.exceptions import LibraryNameAlreadyTakenError
 from replace_domain.repositories.libraries import (
     add_user_to_library,
     get,
@@ -45,8 +46,11 @@ async def create_library(library: LibraryRequestBody):
     """
     Create a new library.
     """
-    with engine.begin() as conn:
-        return new(name=library.name, conn=conn)
+    try:
+        with engine.begin() as conn:
+            return new(name=library.name, conn=conn)
+    except LibraryNameAlreadyTakenError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail= e.message)
 
 
 @libraries_router.delete("/{library_id}", status_code=status.HTTP_204_NO_CONTENT)

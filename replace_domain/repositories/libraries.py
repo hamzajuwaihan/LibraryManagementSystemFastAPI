@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
-from replace_domain.exceptions import ModelNotFoundError
+from replace_domain.exceptions import LibraryNameAlreadyTakenError, ModelNotFoundError
 from sqlalchemy import Connection
 from sqlalchemy.dialects.postgresql import insert
 from replace_domain.infra.db.schema import libraries, library_users, users
 from replace_domain.repositories.users import Users, get as get_user
+from sqlalchemy.exc import IntegrityError
 
 
 @dataclass
@@ -69,7 +70,8 @@ def new(name: str, conn: Connection) -> Libraries:
     """
     Create a new library in the database.
     """
-    default_retry_map = (
+    try:
+        default_retry_map = (
         conn.execute(
             insert(libraries)
             .values(
@@ -79,9 +81,10 @@ def new(name: str, conn: Connection) -> Libraries:
         )
         .mappings()
         .one()
-    )
-    return Libraries(**default_retry_map, users=[])
-
+        )
+        return Libraries(**default_retry_map, users=[])
+    except IntegrityError as e:
+        raise LibraryNameAlreadyTakenError(name)
 
 def add_user_to_library(user_id: UUID, library_id: UUID, conn: Connection) -> None:
     """

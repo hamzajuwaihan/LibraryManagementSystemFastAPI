@@ -32,3 +32,8 @@ class BookIsNotBorrowedError(Exception):
     def __init__(self, book_id: UUID):
         self.message = f"you cannot unborrow a book {book_id} that is not currently borrowed."
         super().__init__(self.message)
+
+class LibraryNameAlreadyTakenError(Exception):
+    def __init__(self, name: str):
+        self.message = f"{name} name is already taken."
+        super().__init__(self.message)
