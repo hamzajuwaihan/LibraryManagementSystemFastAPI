@@ -1,0 +1,65 @@
+---
+services:
+  replace-domain-service-base:
+    build:
+      context: .
+    image: replace-domain-service
+    container_name: replace-domain-service-base
+    volumes:
+      - .:/app
+    environment:
+      - ENVIRONMENT=dev
+      - LOG_LEVEL=INFO
+      - PGDATABASE=postgres
+      - PGHOST=replace-domain-postgres
+      - PGPORT=5432
+      - PGPASSWORD=password
+      - PGUSER=postgres
+      - PYTHONDONTWRITEBYTECODE=true
+      - PYTHONUNBUFFERED=true
+      - VIRTUAL_HOST=replace-domain.docker
+    command: ["echo", "I only exist to be extended so I'll just exit, thanks"]
+
+  replace-domain-service:
+    extends: replace-domain-service-base
+    container_name: replace-domain-service
+    depends_on:
+      - replace-domain-postgres
+      - replace-domain-service-alembic
+    command: ["uvicorn", "--reload", "--workers", "1", "--host", "0.0.0.0", "--port", "80", "replace_domain.app:app"]
+    ports:
+      - 8080:80
+
+  replace-domain-service-gunicorn:
+    extends: replace-domain-service-base
+    container_name: replace-domain-service-gunicorn
+    depends_on:
+      - replace-domain-postgres
+      - replace-domain-service-alembic
+    command: ["gunicorn", "replace_domain.app:app"]
+
+  replace-domain-service-alembic:
+    extends: replace-domain-service-base
+    container_name: replace-domain-service-alembic
+    depends_on:
+      replace-domain-postgres:
+        condition: service_healthy
+    command: ["alembic", "upgrade", "head"]
+
+  replace-domain-postgres:
+    container_name: replace-domain-postgres
+    image: postgres:14.2
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - 5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+
+networks:
+  default:
+    name: olive-platform_default
