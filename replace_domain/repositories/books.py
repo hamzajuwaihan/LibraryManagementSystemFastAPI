@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import insert
 from replace_domain.infra.db.schema import books, library_users
 from replace_domain.exceptions import (
     BookIsNotBorrowedError,
-    BookNotFoundError,
+    ModelNotFoundError,
     UserNotAssociatedWithLibraryError,
 )
 from replace_domain.repositories.authors import get as get_author
@@ -33,7 +33,7 @@ def get(id: UUID, conn: Connection) -> Books:
     if book := conn.execute(books.select().where(books.c.id == id)).first():
         return Books(**book._asdict())
     else:
-        raise BookNotFoundError(id)
+        raise ModelNotFoundError(Books, id)
 
 
 def get_all(conn: Connection) -> list[Books]:
@@ -78,12 +78,10 @@ def borrow(book_id: UUID, user_id: UUID, conn: Connection) -> Books:
     """
     Borrow a book by a user. The user must be associated with the book's library.
     """
-    # Retrieve the book details
     book = get(book_id, conn)
 
-    # Check if the user is associated with the book's library
     is_user_in_library = conn.execute(
-        select(library_users.c.user_id).where(  # Correct way to select a single column
+        select(library_users.c.user_id).where(
             library_users.c.user_id == user_id,
             library_users.c.library_id == book.library_id,
         )
@@ -92,14 +90,12 @@ def borrow(book_id: UUID, user_id: UUID, conn: Connection) -> Books:
     if not is_user_in_library:
         raise UserNotAssociatedWithLibraryError(user_id, book.library_id)
 
-    # Mark the book as borrowed by the user
     conn.execute(
         books.update()
         .where(books.c.id == book_id)
         .values(borrowed_by=user_id, is_borrowed=True)
     )
 
-    # Return the updated book details
     return get(book_id, conn)
 
 
@@ -107,20 +103,15 @@ def unborrow(book_id: UUID, conn: Connection):
     """
     Unborrow the provided book.
     """
-    # Retrieve the book details
     book = get(book_id, conn)
 
-    # Check if the book is borrowed
     if not book.is_borrowed:
-        # Raise an exception if the book is not currently borrowed
         raise BookIsNotBorrowedError(book_id)
 
-    # Update the book status to unborrowed
     conn.execute(
         books.update()
         .where(books.c.id == book_id)
         .values(borrowed_by=None, is_borrowed=False)
     )
 
-    # Return the updated book details
     return get(book_id, conn)

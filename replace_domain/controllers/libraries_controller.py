@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, status, Request
+from fastapi import APIRouter, status, Request
 from uuid import UUID
 from replace_domain.controllers.models.libraries import LibraryRequestBody
-from replace_domain.exceptions import LibraryNotFoundError, UserNotFoundError
 from replace_domain.repositories.libraries import (
     add_user_to_library,
     get,
@@ -35,12 +34,10 @@ async def get_library(library_id: UUID):
     """
     Get a single library by its ID.
     """
-    try:
-        with engine.connect() as conn:
-            library = get(library_id, conn)
-        return library
-    except LibraryNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    with engine.connect() as conn:
+        library = get(library_id, conn)
+    return library
+
 
 
 @libraries_router.post("/", response_model=Libraries)
@@ -57,11 +54,9 @@ async def delete_library(library_id: UUID):
     """
     Delete a library by its ID.
     """
-    try:
-        with engine.begin() as conn:
-            delete(library_id, conn)
-    except LibraryNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    with engine.begin() as conn:
+        delete(library_id, conn)
+
 
 
 @libraries_router.post(
@@ -71,9 +66,6 @@ async def add_user_to_library_endpoint(library_id: UUID, user_id: UUID):
     """
     Add a user to a library.
     """
-    try:
-        with engine.begin() as conn:
-            add_user_to_library(user_id, library_id, conn)
-        return {"message": "User added to the library"}
-    except (LibraryNotFoundError, UserNotFoundError) as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    with engine.begin() as conn:
+        add_user_to_library(user_id, library_id, conn)
+    return {"message": "User added to the library"}

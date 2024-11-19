@@ -14,30 +14,6 @@ class ModelNotFoundError(Exception):
         self.id = id
 
 
-class AuthorNotFoundError(Exception):
-    def __init__(self, author_id: UUID):
-        self.message = f"Author with ID {author_id} not found."
-        super().__init__(self.message)
-
-
-class LibraryNotFoundError(Exception):
-    def __init__(self, library_id: UUID):
-        self.message = f"Library with ID {library_id} not found."
-        super().__init__(self.message)
-
-
-class BookNotFoundError(Exception):
-    def __init__(self, book_id: UUID):
-        self.message = f"Book with ID {book_id} not found."
-        super().__init__(self.message)
-
-
-class UserNotFoundError(Exception):
-    def __init__(self, user_id: UUID):
-        self.message = f"User with ID {user_id} not found."
-        super().__init__(self.message)
-
-
 class EmailAlreadyExistsError(Exception):
     def __init__(self, email: str):
         self.message = f"Email '{email}' is already taken."
@@ -54,5 +30,5 @@ class UserNotAssociatedWithLibraryError(Exception):
 
 class BookIsNotBorrowedError(Exception):
     def __init__(self, book_id: UUID):
-        self.message = f"you cannot unborrow a book with id {book_id} that is not currently borrowed."
+        self.message = f"you cannot unborrow a book {book_id} that is not currently borrowed."
         super().__init__(self.message)

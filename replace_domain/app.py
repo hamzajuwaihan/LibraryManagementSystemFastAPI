@@ -13,10 +13,10 @@ app = FastAPI(title='python template repo for olive',
 
 @app.exception_handler(ModelNotFoundError)
 async def handle_model_not_found(_: Request, exc: ModelNotFoundError) -> Response:
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND,
-                        content=ResponseError(
-                            title='Data not found',
-                            detail=f'{exc.model} with id {exc.id} not found'))
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=ResponseError(
+        title="Data not found",
+        detail=f"{exc.model} with id {exc.id} not found",
+    ).model_dump()) #it doesnt work without model_dump()
 
 
 app.include_router(users_router)

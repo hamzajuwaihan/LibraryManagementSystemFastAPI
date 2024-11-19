@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,EmailStr
 
 
 class UserRequestBody(BaseModel):
     name: str
-    email: str
+    email: EmailStr

@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import insert
 from replace_domain.infra.db.schema import authors
-from replace_domain.exceptions import AuthorNotFoundError
+from replace_domain.exceptions import ModelNotFoundError
 
 
 @dataclass
@@ -19,7 +19,7 @@ def get(id: UUID, conn: Connection) -> Authors:
     if author := conn.execute(authors.select().where(authors.c.id == id)).first():
         return Authors(**author._asdict())
     else:
-        raise AuthorNotFoundError(id)
+        raise ModelNotFoundError(Authors, id)
 
 
 def get_all(conn: Connection) -> list[Authors]:

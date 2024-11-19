@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from sqlite3 import IntegrityError
 from uuid import UUID
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import insert
 from replace_domain.infra.db.schema import users
-from replace_domain.exceptions import EmailAlreadyExistsError, UserNotFoundError
+from replace_domain.exceptions import EmailAlreadyExistsError, ModelNotFoundError
+
 
 
 @dataclass
@@ -24,7 +25,7 @@ def get(id: UUID, conn: Connection) -> Users:
     if user := conn.execute(users.select().where(users.c.id == id)).first():
         return Users(**user._asdict())
     else:
-        raise UserNotFoundError(id)
+        raise ModelNotFoundError(Users, id)
 
 
 def get_all(conn: Connection) -> list[Users]:
@@ -50,7 +51,7 @@ def new(name: str, email: str, conn: Connection) -> Users:
     Create a new user in the database.
     """
     try:
-        default_retry_map = (
+        user_data = (
             conn.execute(
                 insert(users)
                 .values(
@@ -62,9 +63,6 @@ def new(name: str, email: str, conn: Connection) -> Users:
             .mappings()
             .one()
         )
-        return Users(**default_retry_map)
-    except IntegrityError as e:
-        if hasattr(e.orig, "pgcode") and e.orig.pgcode == "23505":
-            if "ix_users_email" in str(e.orig):
-                raise EmailAlreadyExistsError(email)
-        raise e
+        return Users(**user_data)
+    except IntegrityError:
+        raise EmailAlreadyExistsError(email)

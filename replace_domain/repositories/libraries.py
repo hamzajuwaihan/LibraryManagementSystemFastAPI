@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
-from replace_domain.exceptions import LibraryNotFoundError
+from replace_domain.exceptions import ModelNotFoundError
 from sqlalchemy import Connection
 from sqlalchemy.dialects.postgresql import insert
 from replace_domain.infra.db.schema import libraries, library_users, users
@@ -23,7 +23,7 @@ def get(id: UUID, conn: Connection) -> Libraries:
     """
     library_data = conn.execute(libraries.select().where(libraries.c.id == id)).first()
     if not library_data:
-        raise LibraryNotFoundError(id)
+        raise ModelNotFoundError(Libraries, id)
 
     library = Libraries(**library_data._asdict(), users=[])
     users_data = conn.execute(
