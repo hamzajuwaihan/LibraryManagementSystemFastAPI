@@ -9,7 +9,6 @@ from replace_domain.infra.db.schema import users
 from replace_domain.exceptions import EmailAlreadyExistsError, ModelNotFoundError
 
 
-
 @dataclass
 class Users:
     id: UUID
@@ -67,6 +66,7 @@ def new(name: str, email: str, conn: Connection) -> Users:
         return Users(**user_data)
     except IntegrityError:
         raise EmailAlreadyExistsError(email)
+
 
 def patch(user_id: UUID, update_data: dict, conn: Connection) -> Users:
     """

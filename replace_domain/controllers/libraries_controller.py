@@ -40,7 +40,6 @@ async def get_library(library_id: UUID):
     return library
 
 
-
 @libraries_router.post("/", response_model=Libraries)
 async def create_library(library: LibraryRequestBody):
     """
@@ -50,7 +49,7 @@ async def create_library(library: LibraryRequestBody):
         with engine.begin() as conn:
             return new(name=library.name, conn=conn)
     except LibraryNameAlreadyTakenError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail= e.message)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
 
 
 @libraries_router.delete("/{library_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -60,7 +59,6 @@ async def delete_library(library_id: UUID):
     """
     with engine.begin() as conn:
         delete(library_id, conn)
-
 
 
 @libraries_router.post(

@@ -25,6 +25,7 @@ async def get_author(author_id: UUID):
         author = get(author_id, conn)
     return author
 
+
 @authors_router.post("/", response_model=Authors)
 async def create_author(author: AuthorRequestBody):
     with engine.begin() as conn:
@@ -35,4 +36,3 @@ async def create_author(author: AuthorRequestBody):
 async def delete_author(author_id: UUID):
     with engine.begin() as conn:
         delete(author_id, conn)
-

@@ -33,7 +33,6 @@ async def get_user(user_id: UUID):
     return user
 
 
-
 @users_router.post("/", response_model=Users, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserRequestBody):
     """
@@ -44,7 +43,7 @@ async def create_user(user: UserRequestBody):
             return new(name=user.name, email=user.email, conn=conn)
     except EmailAlreadyExistsError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
-    
+
 
 @users_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: UUID):
@@ -53,6 +52,7 @@ async def delete_user(user_id: UUID):
     """
     with engine.begin() as conn:
         delete(user_id, conn)
+
 
 @users_router.patch("/{user_id}", response_model=Users)
 async def update_user(user_id: UUID, user: UserUpdateRequest):

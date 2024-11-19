@@ -43,7 +43,6 @@ async def get_book(book_id: UUID):
     return book
 
 
-
 @books_router.post("/", response_model=Books)
 async def create_book(book: BookRequestBody):
     """
@@ -59,7 +58,6 @@ async def create_book(book: BookRequestBody):
     return new_book
 
 
-
 @books_router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_book(book_id: UUID):
     """
@@ -67,7 +65,6 @@ async def delete_book(book_id: UUID):
     """
     with engine.begin() as conn:
         delete(book_id, conn)
-
 
 
 @books_router.post("/{book_id}/borrow/user/{user_id}", status_code=status.HTTP_200_OK)
@@ -81,7 +78,6 @@ async def borrow_book(book_id: UUID, user_id: UUID):
         return book
     except UserNotAssociatedWithLibraryError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
-
 
 
 @books_router.post("/{book_id}/unborrow", status_code=status.HTTP_200_OK)

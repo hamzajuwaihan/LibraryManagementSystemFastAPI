@@ -72,19 +72,20 @@ def new(name: str, conn: Connection) -> Libraries:
     """
     try:
         default_retry_map = (
-        conn.execute(
-            insert(libraries)
-            .values(
-                name=name,
+            conn.execute(
+                insert(libraries)
+                .values(
+                    name=name,
+                )
+                .returning(libraries)
             )
-            .returning(libraries)
-        )
-        .mappings()
-        .one()
+            .mappings()
+            .one()
         )
         return Libraries(**default_retry_map, users=[])
-    except IntegrityError as e:
+    except IntegrityError:
         raise LibraryNameAlreadyTakenError(name)
+
 
 def add_user_to_library(user_id: UUID, library_id: UUID, conn: Connection) -> None:
     """
